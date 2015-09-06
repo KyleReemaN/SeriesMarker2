@@ -5,12 +5,50 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        List<String> countries = new ArrayList<String>();
+
+        countries.add("Italy");
+        countries.add("Spain");
+        countries.add("France");
+        countries.add("Germany");
+        countries.add("United Kingdom");
+        countries.add("Austria");
+        countries.add("Ireland");
+        countries.add("Portugal");
+        countries.add("Belgium");
+        countries.add("Denmark");
+        countries.add("Finland");
+        countries.add("Norway");
+        countries.add("Sweden");
+        countries.add("Netherlands");
+        countries.add("Greece");
+        countries.add("Luxembourg");
+        countries.add("Malta");
+        countries.add("Latvia");
+        countries.add("Slovakia");
+        countries.add("Slovenia");
+        countries.add("Poland");
+        countries.add("Hungary");
+        countries.add("Romania");
+
+        Collections.sort(countries);
+
+        FastSearchListView listView = (FastSearchListView) findViewById(R.id.listview);
+
+        SimpleAdapter sa = new SimpleAdapter(countries, this);
+        listView.setAdapter(sa);
+
     }
 
 
