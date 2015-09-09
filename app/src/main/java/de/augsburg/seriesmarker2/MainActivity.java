@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listView = (FastSearchListView) findViewById(R.id.listview);
+        registerForContextMenu(listView);
 
         listviewadapter = new SimpleAdapter(seriesList, this);
         listView.setAdapter(listviewadapter);
@@ -239,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         int position = 0;
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        position = (int) info.id;
+        position = (int) info.position;
         posOfElementThatStartedContextMenu = position;
 
         switch(item.getItemId()){

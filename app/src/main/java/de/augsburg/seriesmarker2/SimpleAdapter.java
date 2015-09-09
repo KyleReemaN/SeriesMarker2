@@ -84,11 +84,14 @@ public class SimpleAdapter extends ArrayAdapter<Series> implements SectionIndexe
             view = inflater.inflate(R.layout.listviewitem, null);
             // Locate the TextViews in listviewitem.xml
             // ADD IMAGEVIEW HERE
-            // holder.seriesImage = (ImageView)view.findViewById(R.id.seriesImage);
+            holder.seriesImage = (ImageView)view.findViewById(R.id.seriesImage);
+            holder.seriesImage.setClickable(true);
             holder.seriesName = (TextView)view.findViewById(R.id.seriesName);
             holder.seriesName.setLongClickable(true);
             holder.seasonCounter = (TextView)view.findViewById(R.id.seasonCounter);
+            holder.seasonCounter.setLongClickable(true);
             holder.episodeCounter = (TextView)view.findViewById(R.id.episodeCounter);
+            holder.episodeCounter.setLongClickable(true);
             holder.episodeUnseen = (ImageButton)view.findViewById(R.id.episodeUnseen);
             holder.episodeUnseen.setFocusable(false);
             holder.episodeSeen = (ImageButton)view.findViewById(R.id.episodeSeen);
@@ -110,8 +113,21 @@ public class SimpleAdapter extends ArrayAdapter<Series> implements SectionIndexe
             }
         });
 
-        holder.seasonCounter.setText(String.format("S%02d", seriesList.get(position).getLastSeenSeason()));
-        holder.episodeCounter.setText(String.format("E%02d", seriesList.get(position).getLastSeenEpisode()));
+        holder.seriesImage.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+//                Intent seasonIntent = new Intent(context, SeasonEditorActivity.class);
+//                seasonIntent.putExtra("series", (Parcelable)seriesList.get(pos));
+//                seasonIntent.putExtra("seriesPosition", pos);
+//                ((Activity)context).startActivityForResult(seasonIntent, 1);
+                Toast t1 = Toast.makeText(context, "Test onClick SeriesImage", Toast.LENGTH_SHORT);
+                t1.show();
+            }
+        });
+
+        if(holder.seasonCounter != null)
+            holder.seasonCounter.setText(String.format("S%02d", seriesList.get(position).getLastSeenSeason()));
+        if(holder.episodeCounter != null)
+            holder.episodeCounter.setText(String.format("E%02d", seriesList.get(position).getLastSeenEpisode()));
 
         // holder.episodeUnseen
 
