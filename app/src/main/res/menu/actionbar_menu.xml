@@ -16,6 +16,11 @@
         android:icon="@drawable/searchtwo" />
 
     <item
+        android:id="@+id/synchronize"
+        app:showAsAction="ifRoom"
+        android:title="Synchronisieren" />
+
+    <item
         android:id="@+id/saveTXT"
         app:showAsAction="ifRoom"
         android:title="saveTXT"/>

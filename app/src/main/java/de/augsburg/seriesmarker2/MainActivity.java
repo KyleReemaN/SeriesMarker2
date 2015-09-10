@@ -1,10 +1,14 @@
 package de.augsburg.seriesmarker2;
 
+import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +71,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Build;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 public class MainActivity extends AppCompatActivity {
 
     private final int ADD_DIALOG = 0;
@@ -82,6 +89,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //initializeSeriesList();
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
 
         seriesList.add(new Series("Alpha Series"));
         seriesList.add(new Series("BBlpha Series"));
@@ -162,7 +173,8 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
             case R.id.add_series:
-                showDialog(ADD_DIALOG);
+                synchronize();
+                //showDialog(ADD_DIALOG);
                 return true;
 
             case R.id.search:
@@ -170,15 +182,163 @@ public class MainActivity extends AppCompatActivity {
                 t2.show();
                 return true;
 
+            case R.id.synchronize:
+                synchronize();
+                return true;
+
             case R.id.saveTXT:
                 saveTXT();
-                Toast t3 = Toast.makeText(this, "Data saved to seriesData.txt", Toast.LENGTH_SHORT);
-                t3.show();
+                Toast t4 = Toast.makeText(this, "Data saved to seriesData.txt", Toast.LENGTH_SHORT);
+                t4.show();
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    // TODO
+    // Create background task for synchronize? problems with locks? series objects...
+//    private class SynchronizeTVDB extends AsyncTask<String, Void, String> {
+//        private Exception exception;
+//
+//        protected String doInBackground(String... urls) {
+//            try {
+//
+//                return "test";
+//            } catch (Exception e) {
+//                this.exception = e;
+//                return null;
+//            }
+//        }
+//
+//        protected void onPostExecute(String result) {
+//            // TODO: check this.exception
+//            // TODO: do something with the feed
+//        }
+//    }
+
+    //TODO
+    private void synchronize(){
+        // SYNCHRONIZE EVERY SERIES
+        InputStream inputXMLStream = null;
+
+        try {
+            // USE THIS URL CALL to see if the series exists (language=de searches en AND de)
+            URL url = new URL("http://thetvdb.com/api/GetSeries.php?seriesname=Dexter&language=de");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            inputXMLStream = (con.getInputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        XmlPullParserFactory factory;
+        XmlPullParser xpp = null;
+        try {
+            factory = XmlPullParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            xpp = factory.newPullParser();
+            xpp.setInput(inputXMLStream, null);
+        }
+        catch(Exception e){
+            Log.d("xmltest", "could not create factory for xmlpullparser");
+        }
+
+        String seriesID;
+        String seriesName;
+        String language;
+
+        int eventType;
+        try{
+            eventType = xpp.getEventType();
+            while(eventType!=XmlPullParser.END_DOCUMENT){
+                String name = xpp.getName();
+                switch (eventType) {
+                    case XmlPullParser.START_TAG:
+                        if(name.equals("seriesid")){
+                            seriesID = fetchXmlText(xpp);
+                        }
+                        else if(name.equals("SeriesName")){
+                            seriesName = fetchXmlText(xpp);
+                        }
+                        else if(name.equals("language")){
+                            language = fetchXmlText(xpp);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+                eventType = xpp.next();
+            }
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+            try {
+                if(inputXMLStream!=null)
+                    inputXMLStream.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+
+
+    // CREATE DIALOG WITH POSSIBILITIES
+    // TODO sql attack? "url..." + variable + "..." ....
+    // search right series with name
+    // save seriesid, SeriesName, language
+    // let user choose if the right series is avaiable
+    // DEFAULT: if no right series there option to create own series (no syncrhonize available)
+    private ArrayList<Series> searchSeries(String seriesName){
+        // http://thetvdb.com/api/GetSeries.php?seriesname=dexter&language=de
+        String url = "http://thetvdb.com/api/GetSeries.php?seriesname="+ seriesName +"&language=de";
+        return null;
+    }
+
+    // get more information about series
+    // IMPORTANT <Status>Ended</Status> OR <Status>Continuing</Status>
+    // get and Set Series Status (ended/continuing)
+    // get interesting data like Imdb-Rating ... / Overview...
+    // get PICTURE (banner/poster test...)
+    private void getDetailSeriesInfoInitial(Series series){
+        //http://thetvdb.com/api/1F266C5426BB0174/series/79349/de.xml
+        // CHANGE URL LIKE "http ..... "+ series.getSeriesId " ... /" + series.language + ".xml";
+    }
+
+    // just to get Series_Status (is status still continuing?)
+    // use this in the refresher method (if not Initial was called)
+    private void getDetailSeriesInfoRefresh(Series series){
+        //http://thetvdb.com/api/1F266C5426BB0174/series/79349/de.xml
+    }
+
+    // TEST what is more secure <SeasonNumber>+<EpisodeNumber> OR <DVD_season>+<DVD_episodenumber>
+    // CARE DO NOT USE SeasonNumber=0 (0 is combined or shit...) also not use dvd_season0.....
+    private void refreshSeriesData(Series series){
+        //http://thetvdb.com/api/1F266C5426BB0174/series/79349/all/de.xml
+
+        // create array [seasonNumber][episodeNumber]
+        // [1]-[12], [2]-[22]
+        // first array_seasonNumber, second max_episodeCount (at the moment)
+
+        // refresh series object
+    }
+
+    // get xpp (at tag-level xml.START_TAG <seriesid>78788</seriesid>
+    // fetch xpp.next and get text
+    private String fetchXmlText(XmlPullParser xpp){
+        try{
+            xpp.next();
+            if(xpp.getEventType()==XmlPullParser.TEXT && !xpp.getText().isEmpty() && xpp.getText()!="null")
+                return xpp.getText();
+            return null;
+        }
+        catch(Exception ex){
+        }
+        return null;
+    }
+
 
     private void saveTXT(){
         OutputStream myOutput;
@@ -359,19 +519,20 @@ public class MainActivity extends AppCompatActivity {
         Log.d("seriesMarker", "Starting onPause method");
 
         // iterate through the seriesView components and serialize the 'Series' object
-        FileOutputStream fos;
-        try {
-            fos = openFileOutput("Series.txt", Context.MODE_PRIVATE);
-            ObjectOutputStream os = new ObjectOutputStream(fos);
-            os.writeObject(seriesList);
-            os.close();
-
-        } catch (FileNotFoundException e) {
-            Log.d("seriesMarker", "File 'Series.txt' not found");
-        } catch (IOException e) {
-            Log.d("seriesMarker", "IOException");
-            e.printStackTrace();
-        }
+        // TODO OUTCOMMENT
+//        FileOutputStream fos;
+//        try {
+//            fos = openFileOutput("Series.txt", Context.MODE_PRIVATE);
+//            ObjectOutputStream os = new ObjectOutputStream(fos);
+//            os.writeObject(seriesList);
+//            os.close();
+//
+//        } catch (FileNotFoundException e) {
+//            Log.d("seriesMarker", "File 'Series.txt' not found");
+//        } catch (IOException e) {
+//            Log.d("seriesMarker", "IOException");
+//            e.printStackTrace();
+//        }
 
     }
 

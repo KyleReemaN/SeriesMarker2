@@ -83,7 +83,6 @@ public class SimpleAdapter extends ArrayAdapter<Series> implements SectionIndexe
             holder = new ViewHolder();
             view = inflater.inflate(R.layout.listviewitem, null);
             // Locate the TextViews in listviewitem.xml
-            // ADD IMAGEVIEW HERE
             holder.seriesImage = (ImageView)view.findViewById(R.id.seriesImage);
             holder.seriesImage.setClickable(true);
             holder.seriesName = (TextView)view.findViewById(R.id.seriesName);
