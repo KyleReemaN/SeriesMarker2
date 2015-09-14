@@ -76,9 +76,9 @@ public class SimpleAdapter extends ArrayAdapter<Series> implements SectionIndexe
 
 	@Override
 	public View getView(int position, View view, ViewGroup parent) {
-
         final ViewHolder holder;
         final int pos = position;
+
         if (view == null) {
             holder = new ViewHolder();
             view = inflater.inflate(R.layout.listviewitem, null);
@@ -132,6 +132,8 @@ public class SimpleAdapter extends ArrayAdapter<Series> implements SectionIndexe
 
         // holder.episodeSeen
 
+        if(view != null)
+            view.setLongClickable(true);
 
         return view;
 	}

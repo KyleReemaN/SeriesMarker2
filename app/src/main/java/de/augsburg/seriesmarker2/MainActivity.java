@@ -133,6 +133,14 @@ public class MainActivity extends AppCompatActivity {
         listView = (FastSearchListView) findViewById(R.id.listview);
         registerForContextMenu(listView);
 
+        listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("test","test onItemLongClick");
+                return true;
+            }
+        });
+
         listviewadapter = new SimpleAdapter(seriesList, this);
         listView.setAdapter(listviewadapter);
 
@@ -172,7 +180,8 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
 
-            case R.id.add_series:
+            case R.id.add_series:  // 1 create dialog with available seriesnames - 2 after choosing one synchronize
+                // create_available_series_dialog
                 synchronize();
                 //showDialog(ADD_DIALOG);
                 return true;
